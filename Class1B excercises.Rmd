@@ -1,0 +1,31 @@
+---
+title: "Class1B"
+author: "gc"
+date: "5/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+X=1:50
+plot(X, sin(X), typ="l", col="purple", lwd=2, xlab="x = 1:50", ylab="Sin(x)")
+```
+
+```{r}
+grades <- c(alice=80, barry=99, chandra=60, chris=100) 
+ grades["barry"] 
+```
+```{r}
+which.max(grades) 
+```
+```{r}
+sort(grades)
+```
+
+
+```{r}
+x <-1:3; names(x) <- 3:1; x[3] 
+```
+
