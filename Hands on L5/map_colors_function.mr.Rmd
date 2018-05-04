@@ -1,0 +1,235 @@
+---
+title: "map_colors_function"
+author: "gc"
+date: "4/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Let look at the poor old function
+This is the function code from Barry`s student.
+```{r}
+# old function
+map.colors <- function (value,high.low, palette) {
+  proportion <- ((value-high.low[1])/(high.low[2]-high.low[1]))
+  index <- round ((length(palette)-1)*proportion)+1
+  return (palette[index])
+}
+```
+
+# Now try to understand this fucntion
+```{r}
+map.colors2 <- function (x, high.low=range(x), palette=cm.colors(100)) {
+  
+  #Determine where in the "high.low" range our values of "x" lie"
+  precent <- ((x - high.low[1])/(high.low[2] - high.low[1]))
+  
+  # where in the "palette"" vector of colors is this "precent"
+  index <- round ((length(palette)-1) * precent)+1
+  
+  
+  return (palette[index])
+}
+```
+# My first function
+
+```{r}
+add <- function(x, y=1) {
+ # Sum the input x and y
+ x + y
+}
+```
+# test our first function
+```{r}
+add(x=6, y=4)
+```
+
+```{r}
+add(c(1:5), 20)
+```
+# does this work?
+```{r}
+add(1, 2, 2)
+```
+# write my second function
+
+```{r}
+rescale <- function(x) {
+ rng <-range(x)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+# test my second function
+```{r}
+rescale(1:10)
+```
+```{r}
+rescale(c(1, 2, NA, 3, 10))
+```
+
+```{r}
+rescale2 <- function(x) {
+ rng <-range(x, na.rm = TRUE)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+```{r}
+rescale2(c(1, 2, NA, 3, 10))
+```
+
+
+```{r}
+# rescale <- function(x, na.rm=TRUE, plot=FALSE) {
+ if(na.rm) {
+ rng <-range(x, na.rm=na.rm)
+ } else {
+ rng <-range(x)
+ }
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+```
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+ if(na.rm) {
+ rng <-range(x, na.rm=na.rm)
+ } else {
+ rng <-range(x)
+ }
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+}
+```
+rescale <- function(x, na.rm=TRUE, plot=FALSE) {
+ if(na.rm) {
+ rng <-range(x, na.rm=na.rm)
+ } else {
+ rng <-range(x)
+ }
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+}
+```{r}
+rescale3(c(1, 2, NA, 3, 10), plot = TRUE)
+```
+```{r}
+rescale <- function(x, na.rm=TRUE, plot=FALSE) {
+ if(na.rm) {
+ rng <-range(x, na.rm=TRUE)
+ } else {
+ rng <-range(x)
+ }
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ return(answer)
+ print("is it me you are looking for?")
+ if(plot) {
+ plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+}
+```
+
+```{r}
+library(bio3d)
+```
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+
+```
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+```
+
+```{r}
+library(bio3d)
+```
+
+```{r}
+s1 <- read.pdb("4AKE") # kinase with drug
+```
+
+```{r}
+library(bio3d)
+```
+```{r}
+s1 <- read.pdb("4AKE") # kinase with drug
+s1
+```
+```{r}
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.chainA
+```
+```{r}
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s2.chainA
+```
+
+```{r}
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+```
+```{r}
+s2 <- read.pdb("1AKE") # kinase no drug
+s2
+```
+# my_actual_first_function
+```{r}
+add <- function(x, y=1)
+```
+
