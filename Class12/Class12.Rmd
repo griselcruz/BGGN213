@@ -39,5 +39,29 @@ protein
 write.pdb(ligand, "1hsg_ligand.pdb")
 write.pdb(protein, "1hsg_protein.pdb")
 ```
+#CONFIGURATION
+receptor=1hgs_protein.pdbqt
+ligand=1hgs_ligand.pdbqt
+num_modes= 50
+out= all.pdbqt
+center x=16
+center y=25
+center z=4
 
-#
+```{r}
+library(bio3d)
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+```
+
+
+```{r}
+ori <- read.pdb("1hsg_ligand.pdbqt")
+rmsd(ori, res)
+```
+**Q6** RMSD based on non hydrogen atoms
+```{r}
+inds <- atom.select(ori, "noh")
+rmsd(ori$xyz[,inds$xyz], res$xyz[,inds$xyz])
+```
+
