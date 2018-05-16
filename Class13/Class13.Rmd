@@ -1,0 +1,67 @@
+---
+title: "Class13"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## 1000 GENOME PROJECT DATA
+```{r}
+genotype <- read.csv("373531.csv")
+```
+## Base quality
+```{r}
+install.packages("seqinr")
+```
+```{r}
+install.packages("gtools")
+```
+
+
+```{r}
+library(seqinr)
+library(gtools)
+phred <- asc( s2c("DDDDCDEDCDDDDBBDDDCC@") ) - 33
+phred 
+```
+
+```{r}
+geno <- read.table("text")
+```
+
+```{r}
+summary(geno)
+```
+
+```{r}
+summary (geno$exp[geno$geno == "A/A"])
+summary (geno$exp[geno$geno == "A/G"])
+summary (geno$exp[geno$geno == "G/G"])
+```
+
+###Let's make a box plot
+
+```{r}
+boxplot(exp ~ geno ,data=geno, notch=TRUE)
+```
+
+```{r}
+library(ggplot2)
+ggplot(geno, aes(geno, exp)) + geom_boxplot()
+```
+
+
+## Histogram of the exp column with ggplot2
+
+```{r}
+ggplot(geno, aes(exp, fill = geno)) + geom_density(alpha = 0.2)
+```
+# Boxplot with the data shown
+```{r}
+
+ggplot(geno, aes(geno, exp, fill=geno)) + 
+  geom_boxplot(notch=TRUE, outlier.shape = NA) + 
+  geom_jitter(shape=16, position=position_jitter(0.2), alpha=0.4)
+```
+
