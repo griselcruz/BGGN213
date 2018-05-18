@@ -1,0 +1,254 @@
+---
+title: "Class14"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Analysis of RNAseq data
+
+Input our data
+
+```{r}
+metadata <- read.csv("data/airway_metadata.csv", stringsAsFactors = FALSE)
+counts <- read.csv("data/airway_scaledcounts.csv", stringsAsFactors= FALSE)
+```
+
+
+```{r}
+colnames(counts)[-1] == metadata$id
+```
+#Calculate the mean counts for each gene accross all control experiments
+
+```{r}
+control <- metadata[metadata[,"dex"]=="control",]
+control.mean <- rowSums( counts[ ,control$id] )/nrow(control) 
+names(control.mean) <- counts$ensgene
+```
+```{r}
+head(control.mean)
+```
+#Calculate the mean counts for each gene accross all drug treated experiments
+
+```{r}
+treated <- metadata[metadata[,"dex"]=="treated",]
+treated.mean <- rowSums( counts[ ,treated$id] )/nrow(treated) 
+names(treated.mean) <- counts$ensgene
+```
+
+```{r}
+head(treated.mean)
+```
+#Combine into a new data.frame
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+head(meancounts)
+```
+
+```{r}
+colSums(meancounts)
+```
+#Plot our mean counts data for control vs treated
+
+```{r}
+plot(meancounts$control, meancounts$treated)
+plot
+```
+# Plot with log axis
+```{r}
+plot(meancounts$control, meancounts$treated,log="xy")
+plot
+```
+# calculate log2foldchange
+
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treated.mean"]/meancounts[,"control.mean"])
+head(meancounts)
+```
+# It turns out that there are a lot of genes with zero expression. Let’s filter our data to remove these genes.
+
+#How to find zero value in a matrix
+
+```{r}
+x <- matrix(1:10, ncol=2, byrow=TRUE)
+x[5,2] <- 0
+which(x==0, arr.ind=TRUE)
+```
+#find zero value in our matrix counts
+
+```{r}
+zero.vals <- which(meancounts[,1:2]==0, arr.ind=TRUE)
+head(zero.vals)
+```
+#Now remove the zero count containing genes
+```{r}
+to.rm <- unique(zero.vals[,1])
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+# Let’s filter the dataset both ways to see how many genes are up or down-regulated. A common threshold used for calling something differentially expressed is a log2(FoldChange) of greater than 2 or less than -2 
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+```
+
+
+```{r}
+head(up.ind)
+```
+
+```{r}
+sum(up.ind)
+sum(down.ind)
+```
+
+```{r}
+paste("Up:", sum(up.ind))
+paste("Down:", sum(down.ind))
+```
+# Add annotation from a supplied CSV file, such as those available from ENSEMBLE or UCSC
+
+```{r}
+anno <- read.csv("data/annotables_grch38.csv")
+head(anno)
+```
+#Use the *merge()* function
+#results <- merge(mycounts, anno, by.x=??, by.y=??)
+```{r}
+results <- merge(mycounts, anno, by.x="row.names", by.y="ensgene")
+head(results)
+
+```
+
+# DESeq2 analysis
+Set up ourDESeq Data Set
+
+```{r}
+library(DESeq2)
+```
+```{r}
+citation("DESeq2")
+```
+
+add
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex, 
+                              tidy=TRUE)
+dds
+```
+
+```{r}
+dds <- DESeq(dds)
+```
+```{r}
+res <- results(dds)
+res
+```
+
+```{r}
+summary(res)
+```
+
+```{r}
+resOrdered <- res[order(res$pvalue),]
+```
+```{r}
+res05 <- results(dds, alpha=0.05)
+summary(res05)
+```
+```{r}
+resSig01 <- subset(as.data.frame(res), padj < 0.01)
+nrow(resSig01)
+```
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+```{r}
+resSig01$symbol <- mapIds(org.Hs.eg.db,
+                     keys=row.names(resSig01),
+                     column="SYMBOL",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+head(resSig01)
+```
+
+#You can arrange and view the results by the adjusted p-value
+```{r}
+ord <- order( resSig01$padj )
+head(resSig01[ord,])
+```
+```{r}
+write.csv( resSig01[ord,], file="signif01_results.csv")
+```
+
+#Data visualization
+Plotting counts
+```{r}
+i <- grep("CRISPLD2", resSig01$symbol)
+resSig01[i,]
+```
+```{r}
+rownames(resSig01[i,])
+```
+
+```{r}
+plotCounts(dds, gene="ENSG00000103196", intgroup="dex")
+```
+```{r}
+d <- plotCounts(dds, gene="ENSG00000103196", intgroup="dex", returnData=TRUE)
+head(d)
+```
+```{r}
+boxplot(count ~ dex , data=d)
+```
+```{r}
+library(ggplot2)
+ggplot(d, aes(dex, count)) + geom_boxplot(aes(fill=dex)) + scale_y_log10() + ggtitle("CRISPLD2")
+```
+#Let’s make some other commonly produced visualizations from this data. 
+```{r}
+res$sig <- res$padj<0.05
+table(res$sig)
+```
+```{r}
+sum(is.na(res$sig))
+```
+
+```{r}
+plotMA(res, ylim=c(-2,2))
+```
+```{r}
+resLFC <- lfcShrink(dds, coef=2)
+resLFC
+```
+```{r}
+plotMA(resLFC, ylim=c(-2,2))
+
+```
+
+```{r}
+ggplot(as.data.frame(res), aes(log2FoldChange, -1*log10(pvalue), col=sig)) + 
+    geom_point() + 
+    ggtitle("Volcano plot")
+```
+#Side-note: Transformation
+```{r}
+vsdata <- vst(dds, blind=FALSE)
+```
+#PCA
+```{r}
+plotPCA(vsdata, intgroup="dex")
+```
+## Session Information
+The sessionInfo() prints version information about R and any attached packages. It’s a good practice to always run this command at the end of your R session and record it for the sake of reproducibility in the future.
+```{r}
+sessionInfo()
+```
+
